@@ -12,7 +12,7 @@ TRAEFIK=$(docker ps --format '{{.Names}} {{.Image}}' | awk '$2 ~ /traefik/ {prin
 [ -n "$TRAEFIK" ] || { echo "No running Traefik container found. Stop here and check your setup."; exit 1; }
 echo "Traefik container: $TRAEFIK"
 
-NETWORK=$(docker inspect "$TRAEFIK" --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}} {{end}}' | awk '{print $1}')
+NETWORK=n/a
 ARGS=$(docker inspect "$TRAEFIK" --format '{{join .Args " "}}')
 ENTRY=$(echo "$ARGS" | grep -o 'entrypoints\.[A-Za-z0-9_-]*\.address=:443' | head -1 | cut -d. -f2 || true)
 RESOLVER=$(echo "$ARGS" | grep -o 'certificatesresolvers\.[A-Za-z0-9_-]*' | head -1 | cut -d. -f2 || true)

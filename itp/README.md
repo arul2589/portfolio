@@ -2,7 +2,7 @@
 
 Portfolio for **Arulmurugan S**, intended for **https://charu.tech**. It presents infrastructure, networking and GenAI work as an explorable network graph, with a normal list/case-study fallback.
 
-React + Vite + TypeScript + Tailwind v4 + React Flow (`@xyflow/react`) + React Router. No backend, database, LLM/chatbot, analytics or tracking. All content is typed local data in `src/data/`.
+React + Vite + TypeScript + Tailwind v4 + a d3-force knowledge graph + React Router. No backend, database, LLM/chatbot, analytics or tracking. All content is typed local data in `src/data/`.
 
 ## Commands
 

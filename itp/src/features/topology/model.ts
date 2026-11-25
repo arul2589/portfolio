@@ -1,5 +1,5 @@
 import type { ClusterId, PortfolioEdge, PortfolioNode, Relation } from '../../types';
-import { clusterIds, clusterMeta, topology } from '../../data/topology';
+import { clusterIds, topology } from '../../data/topology';
 
 export type Filter = 'all' | 'projects' | 'ai' | 'infra' | 'net' | 'experience';
 
@@ -11,9 +11,6 @@ export const filters: { id: Filter; label: string; cluster?: ClusterId }[] = [
   { id: 'net', label: 'Networking', cluster: 'net' },
   { id: 'experience', label: 'Experience', cluster: 'career' },
 ];
-
-export const R1 = 180;
-export const R2 = 330;
 
 export const accent: Record<ClusterId, string> = {
   ai: '#A78BFA',
@@ -41,61 +38,44 @@ for (const n of topology.nodes) {
 }
 export const childrenOf = (c: ClusterId) => childrenByCluster.get(c) ?? [];
 
-const rad = (deg: number) => (deg * Math.PI) / 180;
+export type SelectHandler = (id: string, trigger: HTMLElement, viaKeyboard: boolean) => void;
 
-/** Deterministic radial layout: the core in the centre, clusters on ring 1, items fanned out on ring 2. */
-export const positions: Record<string, { x: number; y: number }> = (() => {
-  const out: Record<string, { x: number; y: number }> = { core: { x: 0, y: 0 } };
-  for (const id of clusterIds) {
-    const a = clusterMeta[id].angle;
-    out[id] = { x: R1 * Math.cos(rad(a)), y: R1 * Math.sin(rad(a)) };
-    const kids = childrenOf(id);
-    const n = kids.length;
-    const spread = Math.min(104, 13 * n + 12);
-    const levels = n > 9 ? 5 : n > 6 ? 4 : n > 3 ? 3 : n > 1 ? 2 : 1;
-    kids.forEach((kid, i) => {
-      const angle = n === 1 ? a : a + (i - (n - 1) / 2) * (spread / (n - 1));
-      const radius = R2 + (i % levels) * 52;
-      out[kid] = { x: radius * Math.cos(rad(angle)), y: radius * Math.sin(rad(angle)) };
-    });
-  }
-  return out;
-})();
-
-const REVEAL: Relation[] = ['uses', 'demonstrates', 'hosted_on'];
-
-/** Neighbours reached through evidence relations (not structural belongs_to links). */
-export function evidenceNeighbours(id: string): string[] {
+/** Nodes that appear when `id` is expanded: a cluster reveals its items, any other node reveals everything it connects to. */
+export function neighboursOf(id: string): string[] {
+  const n = getNode(id);
+  if (!n || n.kind === 'core') return [];
+  if (n.kind === 'cluster') return childrenOf(n.id as ClusterId);
   const out = new Set<string>();
   for (const e of topology.edges) {
-    if (!REVEAL.includes(e.relation)) continue;
     if (e.source === id) out.add(e.target);
-    if (e.target === id) out.add(e.source);
+    else if (e.target === id) out.add(e.source);
   }
+  out.delete('core');
   return [...out];
 }
 
-export interface ViewState {
-  expanded: ClusterId | null;
-  selectedId: string | null;
-  filter: Filter;
-}
+export const isExpandable = (id: string) => neighboursOf(id).length > 0;
 
-export function computeVisible({ expanded, selectedId, filter }: ViewState): Set<string> {
+/**
+ * Visible nodes: the core, the (filtered) clusters, and the neighbours of every expanded node that is itself visible.
+ * Collapsing a node therefore also hides anything that was only reachable through it.
+ */
+export function computeVisible(expanded: ReadonlySet<string>, filter: Filter): Set<string> {
   const visible = new Set<string>(['core']);
   const filterCluster = filters.find((f) => f.id === filter)?.cluster;
-  const clusters = filterCluster ? [filterCluster] : clusterIds;
-  clusters.forEach((c) => visible.add(c));
-  if (expanded && visible.has(expanded)) childrenOf(expanded).forEach((k) => visible.add(k));
-  if (selectedId && getNode(selectedId)) {
-    visible.add(selectedId);
-    for (const nb of evidenceNeighbours(selectedId)) {
-      visible.add(nb);
-      const c = clusterOf(nb);
-      if (c) visible.add(c);
+  (filterCluster ? [filterCluster] : clusterIds).forEach((c) => visible.add(c));
+  let grew = true;
+  while (grew) {
+    grew = false;
+    for (const id of expanded) {
+      if (!visible.has(id)) continue;
+      for (const nb of neighboursOf(id)) {
+        if (!visible.has(nb)) {
+          visible.add(nb);
+          grew = true;
+        }
+      }
     }
-    const c = clusterOf(selectedId);
-    if (c) visible.add(c);
   }
   return visible;
 }
@@ -132,11 +112,11 @@ export function relatedNodes(id: string): Related[] {
   return list;
 }
 
-/** Resolve a ?node= deep link. Unknown ids return null so the page falls back to the default view. */
-export function resolveDeepLink(raw: string | null): { id: string; expanded: ClusterId | null } | null {
+/** Resolve a ?node= deep link into the set of nodes to expand. Unknown ids return null so the page falls back to the default view. */
+export function resolveDeepLink(raw: string | null): { id: string; expanded: string[] } | null {
   if (!raw) return null;
   const n = getNode(raw);
   if (!n || n.kind === 'core') return null;
   const c = clusterOf(n.id);
-  return { id: n.id, expanded: c ?? null };
+  return { id: n.id, expanded: [...new Set([...(c ? [c] : []), n.id])] };
 }

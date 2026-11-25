@@ -11,3 +11,7 @@ Prereqs: existing Traefik v3 with a `websecure` entrypoint, Let's Encrypt resolv
 5. Rollback: `docker compose down` (keeps other services untouched).
 
 Not verified here: image build, container start, Traefik routing, certificate issuance.
+
+## Deployed 2026-11-26
+
+First deploy done on the Hostinger VPS (Traefik v3 in host network mode, entrypoint `websecure`, resolver `letsencrypt`). The image built and the container reached healthy. `compose.yml` originally joined the external Traefik network, which fails when that network is `host`; it now uses its own project network instead.

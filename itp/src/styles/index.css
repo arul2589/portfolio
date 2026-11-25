@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "@xyflow/react/dist/style.css";
 
 @theme {
   --color-bg: #090e19;
@@ -38,33 +37,25 @@ main:focus { outline: none; }
 }
 
 /* ---------- topology ---------- */
-.rf-wrap .react-flow { background: transparent; }
-.rf-wrap .react-flow__attribution { background: rgba(9, 14, 25, 0.7); }
-.rf-wrap .react-flow__attribution a { color: var(--color-muted); }
-.rf-wrap .react-flow__handle {
-  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-  width: 2px; height: 2px; min-width: 0; min-height: 0; opacity: 0; border: 0; pointer-events: none;
-}
-.rf-wrap .react-flow__edge-path { stroke: #3a4a63; stroke-width: 1.6; transition: stroke 0.15s, opacity 0.15s; }
-.rf-wrap .edge-belongs_to .react-flow__edge-path { stroke: #2c3a52; }
-.rf-wrap .edge-uses .react-flow__edge-path { stroke-dasharray: 6 5; stroke: #5b6b86; }
-.rf-wrap .edge-demonstrates .react-flow__edge-path { stroke-dasharray: 2 5; stroke: #5b6b86; }
-.rf-wrap .edge-hosted_on .react-flow__edge-path { stroke-dasharray: 12 4 2 4; stroke: #5b6b86; }
-.rf-wrap .edge-career_stage .react-flow__edge-path { stroke: #fbbf24; opacity: 0.55; }
-.rf-wrap .edge-contact_link .react-flow__edge-path { stroke: #3a4a63; }
-.rf-wrap .edge-active .react-flow__edge-path { stroke: #38bdf8; stroke-width: 2.6; opacity: 1; }
-.rf-wrap .edge-dim .react-flow__edge-path { opacity: 0.35; }
-.rf-wrap .react-flow__controls { display: none; }
-.rf-wrap .react-flow__node { cursor: default; }
+/* Knowledge graph */
+.kg { touch-action: none; user-select: none; display: block; }
+.kg-edge { stroke: #3a4a63; stroke-width: 1.6; transition: stroke 0.15s, opacity 0.25s; animation: kg-fade 0.6s ease-out; }
+.kg-edge-belongs_to { stroke: #31415d; }
+.kg-edge-uses { stroke-dasharray: 6 5; stroke: #5b6b86; }
+.kg-edge-demonstrates { stroke-dasharray: 2 5; stroke: #5b6b86; }
+.kg-edge-hosted_on { stroke-dasharray: 12 4 2 4; stroke: #5b6b86; }
+.kg-edge-career_stage { stroke: #fbbf24; opacity: 0.6; }
+.kg-edge-lit { stroke: #38bdf8; stroke-width: 2.6; opacity: 1; }
+.kg-focus .kg-edge:not(.kg-edge-lit) { opacity: 0.22; }
+.kg-node { transition: opacity 0.2s; }
+.kg-dim { opacity: 0.4; }
+.kg-pop { animation: kg-pop 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.3); transform-box: fill-box; transform-origin: center; }
+.kg-label { font-size: 12px; fill: #e2e8f0; paint-order: stroke; stroke: #090e19; stroke-width: 4px; stroke-linejoin: round; pointer-events: none; }
+.kg-label-strong { font-size: 13px; font-weight: 600; fill: #f8fafc; }
+.kg-badge { font-size: 18px; font-weight: 700; pointer-events: none; }
+.kg-hit { cursor: pointer; outline: none; }
+.kg-hit:focus-visible { stroke: #f8fafc; stroke-width: 2.5; stroke-dasharray: 4 3; }
+@keyframes kg-pop { from { transform: scale(0.2); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes kg-fade { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .kg-pop, .kg-edge { animation: none; } }
 
-.orbit {
-  border: 1.5px dashed rgba(148, 163, 184, 0.45);
-  border-radius: 9999px;
-  pointer-events: none;
-}
-.orbit-1 { width: 360px; height: 360px; }
-.orbit-2 { width: 780px; height: 780px; border-color: rgba(148, 163, 184, 0.3); }
-
-/* Nodes are non-draggable/non-selectable at the React Flow level (we handle selection ourselves),
-   so React Flow sets pointer-events:none on them. Re-enable so the buttons inside are clickable. */
-.react-flow__node { pointer-events: all !important; }

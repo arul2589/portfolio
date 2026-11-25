@@ -50,36 +50,56 @@ test.describe('routes', () => {
   });
 });
 
-/** Wait until the graph has finished its initial fit so clicks land where the node is. */
+/** Wait until the force simulation has come to rest so clicks land where the node is. */
 async function settled(page: Page) {
-  const probe = page.locator('[data-node-btn="core"]');
-  await probe.waitFor();
-  let prev = '';
-  let stable = 0;
-  for (let i = 0; i < 60 && stable < 5; i++) {
-    const now = JSON.stringify(await probe.boundingBox()) + (await probe.evaluate((el) => el.closest('.react-flow__node')?.getAttribute('style')));
-    stable = now === prev && now.includes('visibility: visible') ? stable + 1 : 0;
-    prev = now;
-    await page.waitForTimeout(100);
-  }
+  await page.waitForSelector('svg.kg[data-settled="true"]', { timeout: 20000 });
 }
 
 test.describe('topology', () => {
-  test('select cluster, expand, open detail, Escape closes and returns focus', async ({ page }) => {
+  test('touching a node expands it, touching again folds it, Escape closes and returns focus', async ({ page }) => {
     await page.goto('/topology');
     const graph = page.getByTestId('graph');
     await expect(graph).toBeVisible();
     await settled(page);
-    const cluster = graph.getByRole('button', { name: /Projects/ }).first();
-    await cluster.click();
-    const item = graph.getByRole('button', { name: /Knowledge Graph RAG/ }).first();
+    // Initially only the six clusters are shown.
+    await expect(graph.getByRole('button', { name: 'Knowledge Graph RAG' })).toHaveCount(0);
+    const projects = graph.getByRole('button', { name: 'Projects' });
+    await projects.click();
+    const item = graph.getByRole('button', { name: 'Knowledge Graph RAG' });
     await expect(item).toBeVisible();
+    await expect(projects).toHaveAttribute('aria-expanded', 'true');
+    await settled(page);
+    // Touching a project pulls its technologies out of it.
     await item.click();
     await expect(page.getByRole('heading', { name: 'Knowledge Graph RAG Assistant' })).toBeVisible();
     await expect(page).toHaveURL(/node=graph-rag/);
+    await expect(graph.getByRole('button', { name: 'Neo4j' })).toBeVisible();
+    await settled(page);
+    // Touching it again (while selected) folds it back up.
+    await item.click();
+    await expect(graph.getByRole('button', { name: 'Neo4j' })).toHaveCount(0);
     await page.keyboard.press('Escape');
     await expect(page.getByRole('heading', { name: 'Knowledge Graph RAG Assistant' })).toHaveCount(0);
     await expect(page.locator('[data-node-btn="graph-rag"]')).toBeFocused();
+  });
+  test('a skill expands to the projects that use it', async ({ page }) => {
+    await page.goto('/topology?node=graph-rag');
+    const graph = page.getByTestId('graph');
+    await settled(page);
+    await graph.getByRole('button', { name: 'Neo4j' }).click();
+    await expect(page.getByRole('heading', { name: 'Neo4j' })).toBeVisible();
+  });
+  test('nodes can be dragged without selecting them', async ({ page }) => {
+    await page.goto('/topology');
+    await settled(page);
+    const node = page.getByTestId('graph').getByRole('button', { name: 'Projects' });
+    const before = await node.boundingBox();
+    await page.mouse.move(before!.x + before!.width / 2, before!.y + before!.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(before!.x + 120, before!.y + 80, { steps: 8 });
+    await page.mouse.up();
+    await page.waitForTimeout(300);
+    await expect(page.getByTestId('detail-panel')).toContainText('Select a node');
   });
   test('filters change visible clusters and reset restores', async ({ page }) => {
     await page.goto('/topology');

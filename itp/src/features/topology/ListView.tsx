@@ -1,14 +1,12 @@
 import { ChevronDown } from 'lucide-react';
 import { clusterIds, clusterMeta } from '../../data/topology';
-import { childrenOf, getNode } from './model';
-import type { ClusterId } from '../../types';
-import type { ItemData } from './nodes';
+import { childrenOf, getNode, type SelectHandler } from './model';
 
 interface Props {
   visibleClusters: Set<string>;
-  expanded: ClusterId | null;
+  expanded: ReadonlySet<string>;
   selectedId: string | null;
-  onSelect: ItemData['onSelect'];
+  onSelect: SelectHandler;
 }
 
 export function ListView({ visibleClusters, expanded, selectedId, onSelect }: Props) {
@@ -18,7 +16,7 @@ export function ListView({ visibleClusters, expanded, selectedId, onSelect }: Pr
         .filter((c) => visibleClusters.has(c))
         .map((c) => {
           const kids = childrenOf(c);
-          const isOpen = expanded === c;
+          const isOpen = expanded.has(c);
           return (
             <li key={c} className="rounded-2xl border border-line bg-surface">
               <button
