@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://charu.tech/sitemap.xml

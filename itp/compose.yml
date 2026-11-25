@@ -1,0 +1,28 @@
+# Runs behind the EXISTING Traefik. It does not start Traefik, publish ports or mount the Docker socket.
+# Container/router names are "topology-portfolio" so they cannot collide with the earlier v1 "portfolio" service.
+services:
+  topology-portfolio:
+    build: .
+    container_name: topology-portfolio
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    networks:
+      - edge
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=${TRAEFIK_NETWORK:-traefik_default}
+      - traefik.http.routers.topology-portfolio.rule=Host(`${PORTFOLIO_HOST:-charu.tech}`)
+      - traefik.http.routers.topology-portfolio.entrypoints=${TRAEFIK_ENTRYPOINT:-websecure}
+      - traefik.http.routers.topology-portfolio.tls.certresolver=${TRAEFIK_CERTRESOLVER:-letsencrypt}
+      - traefik.http.services.topology-portfolio.loadbalancer.server.port=8080
+
+networks:
+  edge:
+    name: ${TRAEFIK_NETWORK:-traefik_default}
+    external: true
