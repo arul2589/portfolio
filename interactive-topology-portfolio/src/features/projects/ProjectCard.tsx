@@ -39,6 +39,12 @@ export function ProjectCard({ project: p }: { project: Project }) {
             Code<span className="sr-only">: {p.title}</span>
           </ExtLink>
         )}
+        <Link
+          to={`/topology?node=${p.id}`}
+          className="inline-flex items-center rounded-xl px-2 py-2 text-sm text-infra underline underline-offset-4 hover:text-fg"
+        >
+          See in graph<span className="sr-only">: {p.title}</span>
+        </Link>
       </div>
     </article>
   );

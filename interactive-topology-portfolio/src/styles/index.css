@@ -39,6 +39,7 @@ main:focus { outline: none; }
 /* ---------- topology ---------- */
 /* Knowledge graph */
 .kg { touch-action: none; user-select: none; display: block; }
+.kg-home .kg { touch-action: pan-y; }
 .kg-edge { stroke: #3a4a63; stroke-width: 1.6; transition: stroke 0.15s, opacity 0.25s; animation: kg-fade 0.6s ease-out; }
 .kg-edge-belongs_to { stroke: #31415d; }
 .kg-edge-uses { stroke-dasharray: 6 5; stroke: #5b6b86; }

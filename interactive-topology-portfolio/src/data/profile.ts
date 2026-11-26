@@ -6,6 +6,8 @@ export const profile = {
   eyebrow: 'Infrastructure / GenAI',
   supporting:
     '16+ years of enterprise infrastructure experience, including 10+ years in Infoblox DDI. I build AI agents, retrieval-augmented applications and infrastructure automation solutions, drawing on real enterprise operations experience.',
+  /** Path to a headshot in /public (e.g. '/arul.jpg'); null shows initials. */
+  photo: null as string | null,
   location: 'Hosur, Tamil Nadu, India',
   resumeHref: '/Arul_Murugan_Resume.pdf',
   github: 'https://github.com/arul2589',

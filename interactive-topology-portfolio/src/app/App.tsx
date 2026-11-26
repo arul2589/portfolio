@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useRef } from 'react';
 import { Link, NavLink, Route, Routes, useLocation } from 'react-router-dom';
 import { profile } from '../data/profile';
 import { ExtLink } from '../components/ui';
+import { NeuralBackground } from '../components/NeuralBackground';
 import { Home } from '../pages/Home';
 import { ProjectsPage } from '../pages/ProjectsPage';
 import { ProjectDetailPage } from '../pages/ProjectDetailPage';
@@ -38,6 +39,7 @@ function Shell({ children }: { children: React.ReactNode }) {
 
   return (
     <>
+      {pathname !== '/topology' && <NeuralBackground />}
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[100] focus:rounded-lg focus:bg-fg focus:px-4 focus:py-2 focus:text-bg"
